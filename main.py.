@@ -1,91 +1,141 @@
 
+# ==================================================
+# SISTEM MANAJEMEN LAUNDRY BERBASIS PYTHON OOP
+# ==================================================
+
+# CLASS PELANGGAN
 class Pelanggan:
-    def __init__(self, nama, no_hp):
-        self.__nama = nama
+    def __init__(self, nama: str, no_hp: str) -> None:
+        self.nama = nama
         self.no_hp = no_hp
 
+    # Property dan Setter
     @property
-    def nama(self):
+    def nama(self) -> str:
         return self.__nama
 
     @nama.setter
-    def nama(self, nilai):
+    def nama(self, nilai: str) -> None:
         if not nilai.strip():
-            raise ValueError("Nama tidak boleh kosong")
-        self.__nama = nilai
+            raise ValueError("Nama tidak boleh kosong!")
+        self.__nama = nilai.strip()
 
-    def tampilkan_data(self):
+    @property
+    def no_hp(self) -> str:
+        return self.__no_hp
+
+    @no_hp.setter
+    def no_hp(self, nilai: str) -> None:
+        if not nilai.strip():
+            raise ValueError("Nomor HP tidak boleh kosong!")
+        self.__no_hp = nilai.strip()
+
+    def tampilkan_data(self) -> None:
         print("Nama pelanggan:", self.nama)
         print("Nomor HP:", self.no_hp)
 
 
-class Laundry:
-    def __init__(self, nama_toko):
-        self.nama_toko = nama_toko
-        self.daftar_pesanan = []
+# CLASS PESANAN
+class Pesanan:
+    def __init__(
+        self,
+        pelanggan: Pelanggan,
+        layanan: str,
+        berat: float,
+        total: int
+    ) -> None:
+        self.pelanggan = pelanggan
+        self.layanan = layanan
+        self.berat = berat
+        self.total = total
+        self.status = "Sedang Diproses"
 
-    # Class method
+
+# CLASS LAUNDRY
+class Laundry:
+    def __init__(self, nama_toko: str) -> None:
+        self.nama_toko = nama_toko
+        self.daftar_pesanan: list[Pesanan] = []
+
+    # Class Method
     @classmethod
-    def toko_default(cls):
+    def toko_default(cls) -> "Laundry":
         return cls("Laundry Bersih Wangi")
 
-    # Static method
+    # Static Method
     @staticmethod
-    def hitung_biaya(berat, harga_per_kg):
-        return berat * harga_per_kg
+    def hitung_biaya(berat: float, harga: int) -> int:
+        return round(berat * harga)
 
-    def tambah_pesanan(self, pelanggan, layanan, berat):
-        if berat <= 0:
-            print("Berat harus lebih dari 0 kg!")
-            return
+    @staticmethod
+    def format_rupiah(angka: int) -> str:
+        return "Rp" + format(angka, ",").replace(",", ".")
 
-        harga = {
+    # Menambahkan pesanan
+    def tambah_pesanan(
+        self,
+        pelanggan: Pelanggan,
+        layanan: str,
+        berat: float
+    ) -> None:
+
+        harga_layanan: dict[str, int] = {
             "Cuci Kering": 7000,
             "Cuci Setrika": 10000,
             "Setrika": 5000
         }
 
-        if layanan not in harga:
+        if berat <= 0:
+            print("Berat harus lebih dari 0 kg!")
+            return
+
+        if layanan not in harga_layanan:
             print("Jenis layanan tidak tersedia!")
             return
 
-        total = self.hitung_biaya(berat, harga[layanan])
+        harga = harga_layanan[layanan]
+        total = self.hitung_biaya(berat, harga)
 
-        pesanan = {
-            "pelanggan": pelanggan,
-            "layanan": layanan,
-            "berat": berat,
-            "total": total,
-            "status": "Sedang Diproses"
-        }
+        pesanan = Pesanan(
+            pelanggan,
+            layanan,
+            berat,
+            total
+        )
 
         self.daftar_pesanan.append(pesanan)
 
         print("\nPesanan berhasil ditambahkan!")
-        print("Total pembayaran:", self.format_rupiah(total))
+        print("Nama:", pelanggan.nama)
+        print("Layanan:", layanan)
+        print("Berat:", berat, "kg")
+        print("Total:", self.format_rupiah(total))
 
-    @staticmethod
-    def format_rupiah(angka):
-        return "Rp" + format(angka, ",").replace(",", ".")
-
-    def tampilkan_pesanan(self):
+    # Menampilkan semua pesanan
+    def tampilkan_pesanan(self) -> None:
         if not self.daftar_pesanan:
             print("\nBelum ada pesanan.")
             return
 
-        print("\n===== DAFTAR PESANAN LAUNDRY =====")
+        print("\n================================")
+        print("      DAFTAR PESANAN LAUNDRY")
+        print("================================")
 
-        for nomor, pesanan in enumerate(self.daftar_pesanan, start=1):
+        for nomor, pesanan in enumerate(
+            self.daftar_pesanan, start=1
+        ):
             print("\nNomor pesanan:", nomor)
-            print("Nama:", pesanan["pelanggan"].nama)
-            print("Layanan:", pesanan["layanan"])
-            print("Berat:", pesanan["berat"], "kg")
-            print("Total:", self.format_rupiah(pesanan["total"]))
-            print("Status:", pesanan["status"])
+            print("Nama:", pesanan.pelanggan.nama)
+            print("Nomor HP:", pesanan.pelanggan.no_hp)
+            print("Layanan:", pesanan.layanan)
+            print("Berat:", pesanan.berat, "kg")
+            print("Total:", self.format_rupiah(pesanan.total))
+            print("Status:", pesanan.status)
 
-    def ubah_status(self, nomor, status):
+    # Mengubah status pesanan
+    def ubah_status(self, nomor: int, status: str) -> None:
         if nomor < 1 or nomor > len(self.daftar_pesanan):
-            print("Nomor pesanan tidak ditemukan!")
+            print("Pesanan tidak ditemukan!")
             return
 
         pilihan_status = [
@@ -98,67 +148,79 @@ class Laundry:
             print("Status tidak valid!")
             return
 
-        self.daftar_pesanan[nomor - 1]["status"] = status
-        print("Status pesanan berhasil diubah!")
+        self.daftar_pesanan[nomor - 1].status = status
+
+        print("Status pesanan berhasil diperbarui!")
 
 
-# Membuat object laundry
-laundry = Laundry.toko_default()
+# ==================================================
+# PROGRAM UTAMA
+# ==================================================
 
-# Menu utama
-while True:
-    print("\n================================")
-    print("   SISTEM MANAJEMEN LAUNDRY")
-    print("================================")
-    print("1. Tambah Pesanan")
-    print("2. Tampilkan Pesanan")
-    print("3. Ubah Status Pesanan")
-    print("4. Keluar")
+def main() -> None:
+    laundry = Laundry.toko_default()
 
-    pilihan = input("Pilih menu: ")
+    while True:
+        print("\n================================")
+        print("    SISTEM MANAJEMEN LAUNDRY")
+        print("================================")
+        print("1. Tambah Pesanan")
+        print("2. Tampilkan Pesanan")
+        print("3. Ubah Status Pesanan")
+        print("4. Keluar")
 
-    if pilihan == "1":
-        try:
-            nama = input("Nama pelanggan: ")
-            no_hp = input("Nomor HP: ")
+        pilihan = input("\nPilih menu: ")
 
-            pelanggan = Pelanggan(nama, no_hp)
+        if pilihan == "1":
+            try:
+                nama = input("Nama pelanggan: ")
+                no_hp = input("Nomor HP: ")
 
-            print("\nJenis Layanan:")
-            print("Cuci Kering  : Rp7.000/kg")
-            print("Cuci Setrika : Rp10.000/kg")
-            print("Setrika      : Rp5.000/kg")
+                pelanggan = Pelanggan(nama, no_hp)
 
-            layanan = input("Pilih layanan: ")
-            berat = float(input("Berat pakaian (kg): "))
+                print("\nJENIS LAYANAN")
+                print("Cuci Kering  : Rp7.000/kg")
+                print("Cuci Setrika : Rp10.000/kg")
+                print("Setrika      : Rp5.000/kg")
 
-            laundry.tambah_pesanan(
-                pelanggan, layanan, berat
-            )
+                layanan = input("\nPilih layanan: ")
+                berat = float(input("Berat pakaian (kg): "))
 
-        except ValueError as error:
-            print("Input tidak valid:", error)
+                laundry.tambah_pesanan(
+                    pelanggan,
+                    layanan,
+                    berat
+                )
 
-    elif pilihan == "2":
-        laundry.tampilkan_pesanan()
+            except ValueError as error:
+                print("Input tidak valid:", error)
 
-    elif pilihan == "3":
-        laundry.tampilkan_pesanan()
+        elif pilihan == "2":
+            laundry.tampilkan_pesanan()
 
-        try:
-            nomor = int(input("Nomor pesanan: "))
-            status = input(
-                "Status baru (Sedang Diproses/Selesai/Sudah Diambil): "
-            )
+        elif pilihan == "3":
+            laundry.tampilkan_pesanan()
 
-            laundry.ubah_status(nomor, status)
+            try:
+                nomor = int(input("\nNomor pesanan: "))
+                status = input(
+                    "Status baru: "
+                )
 
-        except ValueError:
-            print("Masukkan nomor yang benar!")
+                laundry.ubah_status(nomor, status)
 
-    elif pilihan == "4":
-        print("Terima kasih telah menggunakan layanan laundry!")
-        break
+            except ValueError:
+                print("Masukkan nomor yang benar!")
 
-    else:
-        print("Pilihan tidak tersedia!")
+        elif pilihan == "4":
+            print("\nTerima kasih telah menggunakan")
+            print("Sistem Manajemen Laundry!")
+            break
+
+        else:
+            print("Pilihan tidak tersedia!")
+
+
+# Menjalankan program
+if __name__ == "__main__":
+    main()
