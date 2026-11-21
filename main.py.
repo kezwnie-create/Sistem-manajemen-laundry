@@ -183,7 +183,7 @@ def main() -> None:
                 print("Cuci Setrika : Rp10.000/kg")
                 print("Setrika      : Rp5.000/kg")
 
-                layanan = input("\nPilih layanan: ")
+                layanan = input("\nPilih layanan: ").strip().title()
                 berat = float(input("Berat pakaian (kg): "))
 
                 laundry.tambah_pesanan(
